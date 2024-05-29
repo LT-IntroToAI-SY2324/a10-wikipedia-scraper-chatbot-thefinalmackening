@@ -35,6 +35,7 @@ def get_first_infobox_text(html: str) -> str:
 
     if not results:
         raise LookupError("Page has no infobox")
+    print(results[0].text)
     return results[0].text
 
 
@@ -110,6 +111,7 @@ def get_birth_date(name: str) -> str:
     match = get_match(infobox_text, pattern, error_text)
 
     return match.group("birth")
+
 
 
 # below are a set of actions. Each takes a list argument and returns a list of answers
