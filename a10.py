@@ -74,7 +74,33 @@ def get_match(
     if not match:
         raise AttributeError(error_text)
     return match
+def get_height(how_tall) -> str:
+    "gets the coordinates of the locaiton"
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(how_tall)))
+    pattern = r"(?:height)(?P<height>\d+.ft.\d+.in..\d+.\w+.)"
+    error_text = "Page infobox has no height"
+    match = get_match(infobox_text, pattern, error_text)
 
+    return match.group("height")
+
+def get_coordinates(location) -> str:
+    "gets the coordinates of the locaiton"
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(location)))
+    # pattern = r"(?:Polar radius.*?)(?: ?[\d]+ )?(?P<radius>[\d,.]+)(?:.*?)km"
+    pattern = r"(?:Coordinates)(?P<coordinates>\d+.\d+.\d+.\w.\d+.\d+.\d+.\w+)"
+    error_text = "Page infobox has no coordinates"
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group("coordinates")
+
+def get_population(pop: str) -> str:
+
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(pop)))
+    pattern = r"(?:(Estimate|Population))(?P<population>.*)(?:Rank|census)"
+    error_text = "Page infobox has no population information"
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group("population")
 
 def get_polar_radius(planet_name: str) -> str:
     """Gets the radius of the given planet
@@ -86,7 +112,7 @@ def get_polar_radius(planet_name: str) -> str:
         radius of the given planet
     """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(planet_name)))
-    pattern = r"(?:Polar radius.*?)(?: ?[\d]+ )?(?P<radius>[\d,.]+)(?:.*?)km"
+    pattern = r"(?:Polar Radius.*?)(?: ?[\d]+ )?(?P<radius>[\d,.]+)(?:.*?)km"
     error_text = "Page infobox has no polar radius information"
     match = get_match(infobox_text, pattern, error_text)
 
@@ -139,8 +165,14 @@ def polar_radius(matches: List[str]) -> List[str]:
         polar radius of planet
     """
     return [get_polar_radius(matches[0])]
+def coordinates(matches: List[str]) -> List[str]:
+    return [get_coordinates(matches[0])]
 
+def population(matches: List[str]) -> List[str]:
+    return [get_population(matches[len(matches) - 1])]
 
+def height(matches: List[str]) -> List[str]:
+    return [get_height(matches[len(matches) - 1])]
 # dummy argument is ignored and doesn't matter
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
@@ -156,6 +188,9 @@ Action = Callable[[List[str]], List[Any]]
 pa_list: List[Tuple[Pattern, Action]] = [
     ("when was % born".split(), birth_date),
     ("what is the polar radius of %".split(), polar_radius),
+    ("where is %".split(), coordinates),
+    ("how many people live in %".split(), population),
+    ("how tall is %".split(), height),
     (["bye"], bye_action),
 ]
 
